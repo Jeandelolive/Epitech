@@ -1,0 +1,172 @@
+#!/usr/bin/python3
+from math import *
+from sys import *
+import sys
+import math
+import array
+import matplotlib.pyplot as plt
+
+def calc_g(tab, period):
+    d = tab.__len__() - (period + 1)
+    i = d
+    result = 0
+    tab_result = []
+    while (i < tab.__len__()-1):
+        if (tab[i+1] > tab[i]):
+            tab_result.append(abs(tab[i+1] - tab[i]))
+        i = i + 1
+    i = 0
+    while (i < tab_result.__len__()):
+        result = result + tab_result[i]
+        i = i + 1
+    return (result/period)
+
+def calc_r(tab, period):
+    d = tab.__len__() - (period + 1)
+    i = d
+    result = ((tab[i+period] - tab[i])/tab[i])*100
+    return (round(result))
+
+def calc_s(tab, period):
+    d = tab.__len__() - period
+    i = d
+    moy = 0
+    result = 0
+    while (i < tab.__len__()):
+        moy = moy + tab[i]
+        i = i + 1
+    moy = moy/period
+    i = d
+    while (i < tab.__len__()):
+        result = result + pow((tab[i] - moy), 2)
+        i = i + 1
+    result = result/period
+    result = sqrt(result)
+    if (d == 0):
+        print ("g=nan\tr=nan%\ts={0}" .format(round(result, 2)))
+    return (result)
+
+def calc_weird_value(tab, period, s):
+    i = tab.__len__() - period
+    moy = 0
+    higest_v = 0
+    lowest_v = 0
+    while (i < tab.__len__()):
+        moy = moy + tab[i]
+        i = i + 1
+    moy = moy/period
+    higest_v = moy + 1.87*s
+    lowest_v = moy - 1.87*s
+    i = tab.__len__() - period
+    i = i + (period - 1)
+    if (tab[i] > higest_v):
+        return(tab[i], tab[i] - higest_v)
+    if (tab[i] < lowest_v):
+        return(tab[i], lowest_v - tab[i])
+    return (0)
+
+def len_of_weird(tab_weird):
+    cmpt = 0
+    i = 0
+
+    while (i < len(tab_weird)):
+        if (tab_weird[i] != 0):
+            cmpt = cmpt + 1
+        i = i + 1
+    return (cmpt)
+
+def the_tab_weird(tab_weird):
+    tab_tmp = []
+    tab_final = []
+    len_tab = 0
+    tmp = 0
+    value = 0
+    i = 0
+    j = 0
+
+    while (i < len(tab_weird)):
+        if (tab_weird[i] != 0):
+            tab_tmp.append(tab_weird[i])
+        i = i + 1
+    i = 0
+    tmp = tab_tmp[0][1]
+    len_tab = len(tab_tmp)
+    while (j < len_tab-1):
+        while (i < len(tab_tmp)):
+            if (tab_tmp[i][1] > tmp):
+                tmp = tab_tmp[i][1]
+                value = i
+            i = i + 1
+        j = j + 1
+        i = 0
+        tab_final.append(tab_tmp[value][0])
+        tab_tmp.pop(value)
+        value = 0
+        tmp = tab_tmp[0][1]
+    tab_final.append(tab_tmp[value][0])
+    return (tab_final)
+
+def loop(tab, period):
+    i = 0
+    s = 0
+    g = 0
+    r = 0
+    tab_r = []
+    tab_weird = []
+    r_tmp = 0
+    cmpt_switch = 0
+    while (1):
+        try:
+            test = input()
+        except:
+            break
+        if (test == "STOP"):
+            break
+        if (isFloat(test)):
+            tab.append(float(test))
+            if (i >= period-1):
+                s = calc_s(tab, period)
+            if (i >= period):
+                g = calc_g(tab, period)       
+                r = calc_r(tab, period)
+                tab_r.append(r)
+                tab_weird.append(calc_weird_value(tab, period, s))
+                if (r < 0 and r_tmp > 0):
+                    print ("g={0}\tr={1}%\ts={2}\ta switch occurs" .format(round(g, 2), r, round(s, 2)))
+                    cmpt_switch = cmpt_switch + 1
+                elif (r > 0 and r_tmp < 0):            
+                    print ("g={0}\tr={1}%\ts={2}\ta switch occurs" .format(round(g, 2), r, round(s, 2)))
+                    cmpt_switch = cmpt_switch + 1
+                else:
+                    print ("g={0}\tr={1}%\ts={2}" .format(round(g, 2), r, round(s, 2)))                    
+            if (i < period-1):
+                print ("g=nan\tr=nan%\ts=nan")
+            r_tmp = r
+            i = i + 1
+    print("Global tendency switched {0} times" .format(cmpt_switch))
+    if (len_of_weird(tab_weird) != 0):
+        print("{0} weirdest values are {1}" .format(len_of_weird(tab_weird), the_tab_weird(tab_weird)))
+
+def isFloat(string):
+    try:
+        float(string)
+        return True
+    except ValueError:
+        return False
+
+def error_managment():
+    if (len(sys.argv) != 2):
+        exit(84)
+    try:
+        int(sys.argv[1])
+    except ValueError:
+        exit(84)
+    
+
+def main():
+    error_managment()
+    period = int(sys.argv[1])
+    tab = []
+    loop(tab, period)
+
+main()
